@@ -16,8 +16,4 @@ class IndexController extends Controller
                 "message" => "hello from laravel vue"
             ]);
     }
-    public function show()
-    {
-         return Inertia(component: 'Index/Show');
-    }
 }
