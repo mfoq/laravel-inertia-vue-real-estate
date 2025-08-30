@@ -5,7 +5,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-test('login_redirects_to_inteded_page', function() {
+test('login redirects to inteded page', function() {
 
     User::create([
         'name' => 'User',
@@ -19,6 +19,22 @@ test('login_redirects_to_inteded_page', function() {
     ]);
 
     $response->assertRedirect('/');
+});
+
+test('login failed', function () {
+    $response = $this->post('/login', [
+        'email' => 'saheer@test.com',
+        'password' => 'wrong-password',
+    ]);
+
+    // User should not be authenticated
+    $this->assertGuest();
+
+    // // Assert redirect back (Laravel usually redirects back on failed login)
+    $response->assertStatus(302);
+
+    // Assert validation/auth errors exist in session
+    $response->assertSessionHasErrors();
 });
 
 test('unauthenticated users cannot access realtor listing create page ', function () {

@@ -10,9 +10,12 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class RealtorListingController extends Controller
 {
+
+    #هاي اليوز مشان البوليسي
     use AuthorizesRequests;
     public function __construct()
     {
+        #وهاي مشان استخدم البوليسي ولازم يكون اسمها بنفس الكونفينشن مشان لارافيل توصللها
         $this->authorizeResource(Listing::class, 'listing');
     }
 

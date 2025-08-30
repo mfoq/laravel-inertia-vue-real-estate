@@ -28,9 +28,7 @@ test('first listing page contains 10 items', function () {
             'is_admin' => true,
         ]);
 
-    Listing::factory()->count(20)->create([
-            'by_user_id' => $user
-    ]);
+    Listing::factory()->count(20)->create(['by_user_id' => $user]);
 
     $response = $this->get('/listing');
 
@@ -54,9 +52,7 @@ test('second listing page contains remaining 10 items', function () {
             'is_admin' => true,
         ]);
 
-    Listing::factory()->count(20)->create([
-            'by_user_id' => $user
-    ]);
+    Listing::factory()->count(20)->create(['by_user_id' => $user]);
 
     $response = $this->get('/listing?page=2');
 
@@ -75,9 +71,7 @@ test('second listing page contains remaining 10 items', function () {
 test('listing page works with fewer items than page size', function () {
     $user = User::factory()->create();
 
-    Listing::factory()->count(5)->create([
-        'by_user_id' => $user->id
-    ]);
+    Listing::factory()->count(5)->create(['by_user_id' => $user->id]);
 
     $response = $this->get('/listing');
 
@@ -91,4 +85,35 @@ test('listing page works with fewer items than page size', function () {
             ->where('listings.current_page', 1)
             ->where('listings.per_page', 10)
     );
+});
+
+test('successfully creating listing by realtor', function () {
+    $user = User::factory()->create(['is_admin' => 1]);
+
+    $listing = [
+        'beds' => 2,
+        'baths' => 1,
+        'area' => 120,
+        'city' => 'Amman',
+        'code' => 11937,
+        'street' => "Moh'd shbailat",
+        'street_nr' => 200,
+        'price' => 20000,
+    ];
+
+    $response = $this->post(route('realtor.listing.store'), $listing);
+
+    $response->assertStatus(302);
+    $response->assertRedirect(route('realtor.listing.index'));
+    $response->assertSessionHas('success', 'Listing Created Successfully!');
+
+    $this->assertDatabaseHas('listings', [
+        'city' => 'Amman',
+        'price' => 20000,
+        'by_user_id' => $user->id,
+    ]);
+
+    $lastListing = Listing::latest()->first();
+    $this->assertEquals($listing['city'], $lastListing->city);
+    $this->assertEquals($listing['price'], $lastListing->price);
 });
