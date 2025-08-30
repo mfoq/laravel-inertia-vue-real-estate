@@ -158,3 +158,16 @@ it('listing update validation errors redirects back to the form', function(){
     // $response->assertInvalid(['beds','baths']); //هاي نفس اللي فوق بس بطرريقه ثانيه
     $response->assertSessionMissing('success');
 });
+
+it('deletes listing successfully', function(){
+    $user = User::factory()->create(['is_admin' => 1]);
+
+    $listing = Listing::factory()->create(['by_user_id' => $user->id]);
+
+    $response = $this->actingAs($user)->delete(route('realtor.listing.destroy',$listing));
+
+    $response->assertStatus(302);
+    $response->assertRedirectBack();
+    $response->assertSessionHas('success', 'Listing was deleted!');
+    $this->assertSoftDeleted('listings', ['id' => $listing->id]);
+});
