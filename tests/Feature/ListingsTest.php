@@ -2,8 +2,8 @@
 
 use App\Models\User;
 use App\Models\Listing;
-use Inertia\Testing\AssertableInertia as Inertia;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
 
@@ -34,7 +34,7 @@ test('first listing page contains 10 items', function () {
 
     $response->assertStatus(200);
 
-    $response->assertInertia(fn (Inertia $page) =>
+    $response->assertInertia(fn (AssertableInertia $page) =>
         $page
             ->component('Listing/Index')
             ->has('listings.data', 10) // first page items
@@ -58,7 +58,7 @@ test('second listing page contains remaining 10 items', function () {
 
     $response->assertStatus(200);
 
-    $response->assertInertia(fn (Inertia $page) =>
+    $response->assertInertia(fn (AssertableInertia $page) =>
         $page
             ->component('Listing/Index')
             ->has('listings.data', 10) // second page items
@@ -77,7 +77,7 @@ test('listing page works with fewer items than page size', function () {
 
     $response->assertStatus(200);
 
-    $response->assertInertia(fn (Inertia $page) =>
+    $response->assertInertia(fn (AssertableInertia $page) =>
         $page
             ->component('Listing/Index')
             ->has('listings.data', 5)
@@ -116,4 +116,24 @@ test('successfully creating listing by realtor', function () {
     $lastListing = Listing::latest()->first();
     $this->assertEquals($listing['city'], $lastListing->city);
     $this->assertEquals($listing['price'], $lastListing->price);
+});
+
+it('listing edit form contains correct values', function(){
+    $user = User::factory()->create(['is_admin' => 1]);
+
+    $listing = Listing::factory()->create(['by_user_id' => $user->id]);
+
+    $response = $this->actingAs($user)->get(route('realtor.listing.edit',$listing));
+
+    $response->assertStatus(200);
+
+    $response->assertInertia(fn(AssertableInertia $page) => $page
+        ->component('Realtor/Edit')
+        ->where('listing.city', $listing->city)
+        ->where('listing.price', $listing->price)
+        ->where('listing.price', $listing->price)
+        ->where('listing.beds', $listing->beds)
+        ->where('listing.baths', $listing->baths)
+    );
+
 });
