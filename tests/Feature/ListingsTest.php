@@ -135,5 +135,26 @@ it('listing edit form contains correct values', function(){
         ->where('listing.beds', $listing->beds)
         ->where('listing.baths', $listing->baths)
     );
+});
 
+it('listing update validation errors redirects back to the form', function(){
+    $user = User::factory()->create(['is_admin' => 1]);
+
+    $listing = Listing::factory()->create(['by_user_id' => $user->id]);
+
+    $newListingData = [
+        'area' => 120,
+        'city' => 'Amman',
+        'code' => 11937,
+        'street' => "Moh'd shbailat",
+        'street_nr' => 200,
+        'price' => 20000,
+    ];
+
+    $response = $this->actingAs($user)->put(route('realtor.listing.update',$listing),$newListingData);
+
+    $response->assertStatus(302);
+    $response->assertSessionHasErrors(['beds','baths']);
+    // $response->assertInvalid(['beds','baths']); //هاي نفس اللي فوق بس بطرريقه ثانيه
+    $response->assertSessionMissing('success');
 });
