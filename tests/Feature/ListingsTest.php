@@ -101,7 +101,7 @@ test('successfully creating listing by realtor', function () {
         'price' => 20000,
     ];
 
-    $response = $this->post(route('realtor.listing.store'), $listing);
+    $response = $this->actingAs($user)->post(route('realtor.listing.store'), $listing);
 
     $response->assertStatus(302);
     $response->assertRedirect(route('realtor.listing.index'));
